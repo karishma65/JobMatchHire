@@ -6,29 +6,86 @@
   <title>JobMatchHire | Candidate Evaluation Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700;1,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <div class="app-layout">
-    <!-- Clean Aligned Navigation Header -->
-    <header class="app-header">
-      <div class="brand">
-        <div class="brand-icon">JMH</div>
-        <div class="brand-info">
-          <h1 class="brand-title">JobMatchHire <span class="tag-version">Candidate Evaluation Portal</span></h1>
+  <!-- Fluid Red Dot Cursor (eDesign Interactive Style) -->
+  <div class="custom-cursor-dot" id="cursorDot"></div>
+  <div class="custom-cursor-ring" id="cursorRing"></div>
+
+  <!-- Architectural Background Grid Lines -->
+  <div class="grid-lines-overlay" aria-hidden="true">
+    <div class="grid-line"></div>
+    <div class="grid-line"></div>
+    <div class="grid-line"></div>
+    <div class="grid-line"></div>
+    <div class="grid-line"></div>
+  </div>
+
+  <!-- Rotated Side Badges -->
+  <div class="side-badge-left" aria-hidden="true">&copy; 2004–2026 // CANDIDATE EVALUATION</div>
+  <div class="side-badge-right" aria-hidden="true">CANDIDATE // TALENT SUITE</div>
+
+  <!-- Clean Spacious Agency Header (Matched to Landing Page & Waving Hand Logo) -->
+  <header class="site-header app-header">
+    <div class="container">
+      <div class="header-inner">
+        <a href="/" class="brand-wrapper">
+          <div class="brand-hand-icon" aria-label="Waving hand logo">
+            <svg class="waving-hand-svg" viewBox="0 0 100 100" fill="currentColor">
+              <path d="M 43.5,6.0 Q 43.5,6.0 42.1,7.4 Q 40.6,8.9 41.3,11.0 Q 42.1,13.2 42.8,15.4 Q 43.5,17.5 45.0,19.7 Q 46.4,21.9 47.8,24.0 Q 49.3,26.2 50.0,28.4 Q 50.7,30.5 52.2,32.7 Q 53.6,34.9 54.3,37.0 Q 55.0,39.2 52.9,39.2 Q 50.7,39.2 48.6,37.7 Q 46.4,36.3 44.2,34.1 Q 42.1,32.0 39.9,29.8 Q 37.7,27.6 35.6,25.5 Q 33.4,23.3 31.2,21.9 Q 29.1,20.4 26.9,18.3 Q 24.8,16.1 22.6,15.4 Q 20.4,14.7 19.0,16.1 Q 17.5,17.5 18.3,19.7 Q 19.0,21.9 20.4,24.0 Q 21.9,26.2 24.0,28.4 Q 26.2,30.5 28.4,32.7 Q 30.5,34.9 32.7,37.0 Q 34.9,39.2 37.0,41.3 Q 39.2,43.5 41.3,45.7 Q 43.5,47.8 43.5,50.0 Q 43.5,52.2 41.3,52.2 Q 39.2,52.2 37.0,50.0 Q 34.9,47.8 32.7,46.4 Q 30.5,45.0 28.4,43.5 Q 26.2,42.1 24.0,40.6 Q 21.9,39.2 19.7,37.7 Q 17.5,36.3 15.4,34.9 Q 13.2,33.4 11.0,34.1 Q 8.9,34.9 8.2,37.0 Q 7.4,39.2 8.9,40.6 Q 10.3,42.1 12.5,44.2 Q 14.7,46.4 16.8,47.8 Q 19.0,49.3 21.1,50.7 Q 23.3,52.2 25.5,53.6 Q 27.6,55.0 29.8,57.2 Q 32.0,59.4 34.1,60.8 Q 36.3,62.3 36.3,64.4 Q 36.3,66.6 34.1,66.6 Q 32.0,66.6 29.8,65.1 Q 27.6,63.7 25.5,63.0 Q 23.3,62.3 21.1,61.5 Q 19.0,60.8 16.8,59.4 Q 14.7,57.9 12.5,57.9 Q 10.3,57.9 8.2,58.7 Q 6.0,59.4 6.7,61.5 Q 7.4,63.7 9.6,65.1 Q 11.8,66.6 13.9,68.0 Q 16.1,69.5 18.3,70.9 Q 20.4,72.4 22.6,73.8 Q 24.8,75.2 26.9,76.7 Q 29.1,78.1 31.2,79.6 Q 33.4,81.0 35.6,82.5 Q 37.7,83.9 39.9,86.1 Q 42.1,88.2 44.2,89.7 Q 46.4,91.1 48.6,91.8 Q 50.7,92.6 52.9,93.3 Q 55.0,94.0 57.2,94.0 Q 59.4,94.0 61.5,94.0 Q 63.7,94.0 65.9,93.3 Q 68.0,92.6 70.2,91.1 Q 72.4,89.7 73.8,87.5 Q 75.2,85.3 77.4,83.2 Q 79.6,81.0 81.7,79.6 Q 83.9,78.1 85.3,76.0 Q 86.8,73.8 87.5,71.6 Q 88.2,69.5 89.0,67.3 Q 89.7,65.1 89.7,63.0 Q 89.7,60.8 89.7,58.7 Q 89.7,56.5 90.4,54.3 Q 91.1,52.2 91.1,50.0 Q 91.1,47.8 91.1,45.7 Q 91.1,43.5 91.8,41.3 Q 92.6,39.2 92.6,37.0 Q 92.6,34.9 93.3,32.7 Q 94.0,30.5 94.0,28.4 Q 94.0,26.2 94.0,24.0 Q 94.0,21.9 92.6,21.1 Q 91.1,20.4 89.0,21.1 Q 86.8,21.9 85.3,24.0 Q 83.9,26.2 83.2,28.4 Q 82.5,30.5 82.5,32.7 Q 82.5,34.9 81.7,37.0 Q 81.0,39.2 79.6,41.3 Q 78.1,43.5 76.0,43.5 Q 73.8,43.5 71.6,42.1 Q 69.5,40.6 68.0,38.5 Q 66.6,36.3 65.1,34.1 Q 63.7,32.0 62.3,29.8 Q 60.8,27.6 59.4,25.5 Q 57.9,23.3 56.5,21.1 Q 55.0,19.0 53.6,16.8 Q 52.2,14.7 50.7,12.5 Q 49.3,10.3 47.8,8.2 Q 46.4,6.0 45.0,6.0 Z"/>
+            </svg>
+          </div>
+          <div class="brand-title-box">
+            <span class="brand-name">JobMatchHire</span>
+            <span class="brand-meta">Candidate Portal · Resume Intelligence</span>
+          </div>
+        </a>
+
+        <div class="header-actions">
+          <a href="/" class="btn-pill btn-pill-outline" id="btn-goto-hub-b" title="Go to Overview">
+            <span>← Overview</span>
+          </a>
+          <button class="btn-pill btn-pill-outline" id="btn-refresh-jobs" title="Fetch latest job openings">
+            <span>↻ Refresh Jobs</span>
+          </button>
         </div>
       </div>
+    </div>
+  </header>
 
-      <div class="header-actions">
-        <button class="btn btn-outline btn-sm" id="btn-refresh-jobs" title="Fetch latest job openings">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Refresh Jobs
-        </button>
+  <!-- Editorial Hero Strip (Inspired by Ref2.mp4 "Convert strategy into action") -->
+  <section class="portal-hero-strip">
+    <div class="container">
+      <div class="portal-hero-flex">
+        <div>
+          <div class="ref2-eyebrow">
+            <span>CONNECTED EVALUATION ENGINE</span>
+            <span class="ref2-arrow">───→</span>
+          </div>
+          <h1 class="portal-hero-title">Turn credentials into verified matches<span class="title-accent">.</span></h1>
+          <p class="portal-hero-desc">
+            Upload your resume (.pdf, .docx, or .txt) to evaluate your contextual fit against active job openings. Receive deterministic 4-factor scoring, verified evidence citations, and token-protected official evaluation reports.
+          </p>
+        </div>
+        <div class="hero-right-side">
+          <img src="/static/images/candidate_portal_hero.jpg" alt="Candidate Intelligence Marionette" class="hero-candidate-marionette-img" title="ECCE 2.0 Evaluation Engine">
+          <span class="badge-status-pill">
+            <span class="status-pulse-dot"></span> Online & Synchronized
+          </span>
+          <div class="ref2-pager" aria-hidden="true" title="ECCE Evaluation Phases">
+            <div class="pager-ring"><span class="pager-dot"></span></div>
+            <span class="pager-dot"></span>
+            <span class="pager-dot"></span>
+          </div>
+        </div>
       </div>
-    </header>
+    </div>
+  </section>
 
-    <!-- Main Workspace -->
+  <!-- Main Workspace -->
+  <div class="container">
     <main class="matcher-layout">
       <!-- Left Column: Input Form & Upload -->
       <section class="card panel-upload">
@@ -54,7 +111,7 @@
           <p class="card-subtitle">Accepts PDF, DOCX, or TXT format</p>
         </div>
 
-        <!-- Hidden Native File Input (placed outside clickable dropzone to prevent recursion/dialog suppression) -->
+        <!-- Hidden Native File Input -->
         <input type="file" id="resume-file-input" accept=".pdf,.docx,.doc,.txt" style="display: none;">
 
         <!-- Drag & Drop Upload Zone -->
@@ -80,7 +137,7 @@
             <span class="file-name" id="file-name-text">resume.pdf</span>
             <span class="file-size" id="file-size-text">(0 KB)</span>
           </div>
-          <button type="button" class="btn-clear-file" id="btn-clear-file">&times;</button>
+          <button type="button" class="btn-clear-file" id="btn-clear-file" title="Remove file">&times;</button>
         </div>
 
         <!-- Candidate Name (Optional) -->
@@ -104,15 +161,15 @@
         </div>
 
         <div id="results-display-area">
-          <div class="results-empty-state" style="text-align: center; padding: 48px 24px; color: var(--text-muted);">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; color: var(--border-color, #cbd5e1);">
+          <div class="results-empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
               <line x1="16" y1="13" x2="8" y2="13"></line>
               <line x1="16" y1="17" x2="8" y2="17"></line>
             </svg>
-            <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 6px;">No Evaluation Active</h3>
-            <p style="font-size: 0.88rem; max-width: 380px; margin: 0 auto; line-height: 1.45;">
+            <h3>No Evaluation Active</h3>
+            <p>
               Select a target job requisition, upload your resume (.pdf, .docx, or .txt), and submit to receive your individual evaluation status and download your official ECCE PDF report.
             </p>
           </div>

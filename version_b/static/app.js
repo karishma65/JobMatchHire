@@ -23,6 +23,7 @@ const btnRefreshJobs = document.getElementById("btn-refresh-jobs");
 
 // Initialization
 document.addEventListener("DOMContentLoaded", () => {
+  initCustomCursor();
   setupEventListeners();
   loadReceivedJobs();
   restoreCandidateSession();
@@ -144,7 +145,7 @@ async function loadReceivedJobs() {
       jobSummaryCard.innerHTML = `
         <div class="empty-hint" style="color: var(--text-secondary);">
           No active job requirements found.<br>
-          Please create a job in <strong>Recruiter Portal (http://127.0.0.1:8000)</strong> first, then click <strong>Refresh Jobs</strong>.
+          Please check back shortly or click <strong>Refresh Jobs</strong>.
         </div>
       `;
       return;
@@ -300,74 +301,81 @@ async function handleAnalyzeResume() {
 function renderAnalysisResult(result) {
   const downloadUrl = result.report_download_url || `/candidates/${result.candidate_id}/report?token=${result.candidate_token}`;
   const evalStatus = result.evaluation_status || "Evaluation Completed";
-  const statusColor = evalStatus === "Review Flagged" ? "var(--warning-text, #b45309)" : "var(--success-text, #15803d)";
+  const statusColor = evalStatus === "Review Flagged" ? "#b45309" : "#059669";
+  const statusBg = evalStatus === "Review Flagged" ? "#fef3c7" : "#ecfdf5";
+  const statusBorder = evalStatus === "Review Flagged" ? "#fde68a" : "#a7f3d0";
 
   resultsDisplayArea.innerHTML = `
-    <div class="card" style="padding: 24px; border: 1px solid var(--border-color); background: var(--bg-surface); border-radius: 8px; margin-bottom: 20px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px;">
+    <div class="result-card-inner">
+      <div class="result-top-flex">
         <div>
-          <span style="font-size: 0.75rem; font-family: 'JetBrains Mono'; background: var(--border-color); padding: 3px 8px; border-radius: 4px; color: var(--text-secondary); text-transform: uppercase;">
-            Target Job: ${result.job_id}
-          </span>
-          <h2 style="margin: 8px 0 4px; font-size: 1.4rem; color: var(--text-primary);">${result.candidate_name}</h2>
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">
-            Candidate Identifier: <code style="font-family: 'JetBrains Mono'; font-weight: 700; color: var(--brand-primary);">${result.candidate_id}</code>
+          <span class="target-job-badge">Target Job: ${result.job_id}</span>
+          <h2 class="cand-name-title">${result.candidate_name}</h2>
+          <div class="cand-meta-line">
+            Candidate ID: <code style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--accent-red);">${result.candidate_id}</code>
             <span style="margin: 0 6px;">•</span>
-            Resume Version: <span class="tag-version" style="background: var(--brand-primary); color: #fff; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">v${result.resume_version || 1}</span>
+            Version: <span class="tag-version-pill">v${result.resume_version || 1}</span>
             <span style="margin: 0 6px;">•</span>
-            Evaluated (IST): <span style="font-weight: 600; color: var(--text-primary);">${formatToIST(result.created_at)}</span>
+            Evaluated (IST): <span style="font-weight: 600; color: var(--text-main);">${formatToIST(result.created_at)}</span>
+          </div>
+          <div style="margin-top: 8px;">
+            ${result.sync_to_version_a_status === "synced" 
+              ? `<span style="display:inline-flex; align-items:center; gap:6px; font-size:0.75rem; font-family:'JetBrains Mono',monospace; font-weight:700; color:#15803d; background:rgba(34,197,94,0.12); padding:3px 10px; border-radius:999px; border:1px solid rgba(34,197,94,0.3);">
+                   <span style="width:6px; height:6px; border-radius:50%; background:#15803d;"></span>
+                   Transmitted to Recruiter Portal (Requisition: ${result.job_id})
+                 </span>`
+              : `<span style="display:inline-flex; align-items:center; gap:6px; font-size:0.75rem; font-family:'JetBrains Mono',monospace; font-weight:700; color:#b45309; background:#fef3c7; padding:3px 10px; border-radius:999px; border:1px solid #fde68a;">
+                   ⚠ Sync to Recruiter Portal: ${result.sync_to_version_a_message || result.sync_to_version_a_status}
+                 </span>`
+            }
           </div>
         </div>
-        <div style="text-align: right;">
-          <div style="font-size: 2.2rem; font-weight: 800; color: var(--brand-primary); font-family: 'JetBrains Mono'; line-height: 1;">
-            ${result.match_score}%
-          </div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-top: 4px;">Overall Match Score</div>
+        <div class="score-display-box">
+          <div class="score-num-giant">${result.match_score}%</div>
+          <div class="score-caption">Overall Match Score</div>
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;">
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 14px; border-radius: 6px;">
-          <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Evaluation Status</div>
-          <div style="font-size: 0.95rem; font-weight: 700; color: ${statusColor}; margin-top: 3px;">
+      <div class="two-col-grid">
+        <div class="info-stat-card" style="background: ${statusBg}; border-color: ${statusBorder};">
+          <div class="stat-label-mono">Evaluation Status</div>
+          <div class="stat-val-strong" style="color: ${statusColor}; font-size: 1rem;">
             ${evalStatus}
           </div>
         </div>
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 14px; border-radius: 6px;">
-          <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Experience Assessment</div>
-          <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-top: 3px;">
-            ${result.extracted_experience} Years (${result.experience_match_status})
+        <div class="info-stat-card">
+          <div class="stat-label-mono">Experience Assessment</div>
+          <div class="stat-val-strong">
+            ${result.extracted_experience} Years <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">(${result.experience_match_status})</span>
           </div>
         </div>
       </div>
 
-      <div style="background: #f1f5f9; border-left: 4px solid var(--brand-primary); padding: 12px 14px; border-radius: 4px; margin-bottom: 20px;">
-        <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">
-          Contextual Evidence Summary
-        </div>
-        <p style="margin: 0; font-size: 0.85rem; color: var(--text-primary); line-height: 1.4;">
-          ${result.evidence_summary || "ECCE completed contextual parsing of skills and professional experience."}
+      <div class="evidence-box">
+        <div class="evidence-title">Contextual Evidence Summary</div>
+        <p class="evidence-p">
+          ${result.evidence_summary || "ECCE completed contextual parsing of technical skills, action verbs, and verified experience."}
         </p>
       </div>
 
-      <!-- Action Section: Download PDF Report and Re-evaluation -->
-      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px;">
-        <a href="${downloadUrl}" target="_blank" class="btn btn-primary" id="btn-download-pdf" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px; font-weight: 700;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <!-- Action Row: Download PDF & Re-evaluate -->
+      <div class="result-actions-row">
+        <a href="${downloadUrl}" target="_blank" class="btn-pill btn-pill-red" id="btn-download-pdf">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="7 10 12 15 17 10"></polyline>
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
-          Download Evaluation Report (PDF)
+          <span>Download Evaluation Report (PDF)</span>
         </a>
-        <button type="button" class="btn btn-outline" id="btn-reevaluate" onclick="prepareReevaluation('${result.candidate_name}', '${result.candidate_id}')" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-          Upload Updated Resume / Re-evaluate
+        <button type="button" class="btn-pill btn-pill-outline" id="btn-reevaluate" onclick="prepareReevaluation('${result.candidate_name}', '${result.candidate_id}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <span>Upload Updated Resume / Re-evaluate</span>
         </button>
       </div>
 
-      <div style="font-size: 0.76rem; color: var(--text-muted); line-height: 1.45; border-top: 1px solid var(--border-color); padding-top: 12px;">
-        <strong>Candidate Privacy & Access Notice:</strong> In accordance with candidate privacy requirements, the full 8-section breakdown (including contextual resume passages, hypothetical counterfactual simulations, and private skill-gap remediation guidance) is compiled into your individual, downloadable PDF report. This report is protected by your candidate session token.
+      <div class="privacy-notice-foot">
+        <strong>Candidate Privacy & Access Notice:</strong> The full 8-section breakdown (including verified quote citations, counterfactual simulation score bumps, and private skill remediation recommendations) is securely compiled into your downloadable PDF report, accessible only via your candidate session token.
       </div>
     </div>
   `;
@@ -400,3 +408,55 @@ function showToast(message, type = "info") {
     setTimeout(() => toast.remove(), 250);
   }, 3500);
 }
+
+// Fluid Agency Cursor with Event Delegation (Matched with Landing & Recruiter Pages)
+function initCustomCursor() {
+  const dot = document.getElementById("cursorDot");
+  const ring = document.getElementById("cursorRing");
+  if (!dot || !ring) return;
+
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+  let ringX = mouseX;
+  let ringY = mouseY;
+
+  window.addEventListener("mousemove", (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+  });
+
+  function renderFollower() {
+    ringX += (mouseX - ringX) * 0.18;
+    ringY += (mouseY - ringY) * 0.18;
+    ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+    requestAnimationFrame(renderFollower);
+  }
+  requestAnimationFrame(renderFollower);
+
+  // Dynamic Event Delegation for hover states across all interactive elements
+  const interactiveSelector = "a, button, .card, .btn-pill, .btn, .dropzone, input, select, textarea, .summary-skills-chips span";
+  
+  document.addEventListener("mouseover", (e) => {
+    if (e.target && e.target.closest && e.target.closest(interactiveSelector)) {
+      ring.classList.add("cursor-hover");
+    }
+  });
+
+  document.addEventListener("mouseout", (e) => {
+    if (e.target && e.target.closest && e.target.closest(interactiveSelector)) {
+      ring.classList.remove("cursor-hover");
+    }
+  });
+
+  document.addEventListener("mouseleave", () => {
+    dot.style.opacity = "0";
+    ring.style.opacity = "0";
+  });
+
+  document.addEventListener("mouseenter", () => {
+    dot.style.opacity = "1";
+    ring.style.opacity = "1";
+  });
+}
+

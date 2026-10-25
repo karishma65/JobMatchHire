@@ -1,6 +1,7 @@
 import re
 import io
 import os
+from datetime import datetime
 from typing import List, Tuple, Set, Dict, Any, Optional
 import pdfplumber
 import docx
@@ -176,8 +177,7 @@ def extract_experience_in_years(text: str) -> float:
             extracted_years = max(vals)
 
     # 2. Date ranges in experience sections (e.g., 2018 - 2023, 2021 to Present)
-    # Current benchmark year: 2026
-    current_year = 2026
+    current_year = datetime.now().year
     date_range_matches = re.findall(
         r'(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*)?(20\d\d)\s*(?:-|–|—|to)\s*(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*)?(Present|Current|Now|20\d\d)',
         text_clean,

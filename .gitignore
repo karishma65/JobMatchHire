@@ -3,16 +3,8 @@
 .env.local
 *.env
 
-# SQLite Databases (Demo & Runtime data)
-*.db
-*.sqlite
-*.sqlite3
-version_a/version_a.db
-version_b/version_b.db
 
-# Generated Candidate Evaluation PDF Reports
-version_b/reports/*.pdf
-!version_b/reports/.gitkeep
+
 
 # Python cache & build artifacts
 __pycache__/

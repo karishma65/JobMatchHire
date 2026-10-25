@@ -18,6 +18,9 @@ class JobResponse(JobBase):
     sync_status: str = Field("pending", description="Status of sync with Version B: synced, failed, pending")
     sync_message: Optional[str] = None
     created_at: str
+    candidate_count: Optional[int] = 0
+    top_score: Optional[float] = 0.0
+    latest_candidate_at: Optional[str] = None
 
     class Config:
         from_attributes = True

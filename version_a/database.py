@@ -70,7 +70,7 @@ def init_db():
 def save_job(job_data: Dict[str, Any], sync_status: str = "pending", sync_message: str = "") -> Dict[str, Any]:
     conn = get_connection()
     cursor = conn.cursor()
-    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now_str = job_data.get("created_at") or job_data.get("received_at") or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     req_skills_json = json.dumps(job_data.get("required_skills", []))
     pref_skills_json = json.dumps(job_data.get("preferred_skills", []))
@@ -109,7 +109,14 @@ def update_job_sync_status(job_id: str, sync_status: str, sync_message: str = ""
 def get_job(job_id: str) -> Optional[Dict[str, Any]]:
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM jobs WHERE job_id = ?", (job_id,))
+    cursor.execute("""
+    SELECT j.*, 
+           (SELECT COUNT(*) FROM candidate_results cr WHERE cr.job_id = j.job_id) AS candidate_count,
+           (SELECT MAX(match_score) FROM candidate_results cr WHERE cr.job_id = j.job_id) AS top_score,
+           (SELECT MAX(received_at) FROM candidate_results cr WHERE cr.job_id = j.job_id) AS latest_candidate_at
+    FROM jobs j 
+    WHERE j.job_id = ?
+    """, (job_id,))
     row = cursor.fetchone()
     conn.close()
     if not row:
@@ -117,12 +124,21 @@ def get_job(job_id: str) -> Optional[Dict[str, Any]]:
     d = dict(row)
     d["required_skills"] = json.loads(d["required_skills"])
     d["preferred_skills"] = json.loads(d["preferred_skills"])
+    d["candidate_count"] = int(d.get("candidate_count") or 0)
+    d["top_score"] = float(d.get("top_score") or 0.0)
     return d
 
 def list_jobs() -> List[Dict[str, Any]]:
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM jobs ORDER BY created_at DESC")
+    cursor.execute("""
+    SELECT j.*, 
+           (SELECT COUNT(*) FROM candidate_results cr WHERE cr.job_id = j.job_id) AS candidate_count,
+           (SELECT MAX(match_score) FROM candidate_results cr WHERE cr.job_id = j.job_id) AS top_score,
+           (SELECT MAX(received_at) FROM candidate_results cr WHERE cr.job_id = j.job_id) AS latest_candidate_at
+    FROM jobs j 
+    ORDER BY j.created_at DESC
+    """)
     rows = cursor.fetchall()
     conn.close()
     result = []
@@ -130,6 +146,8 @@ def list_jobs() -> List[Dict[str, Any]]:
         d = dict(r)
         d["required_skills"] = json.loads(d["required_skills"])
         d["preferred_skills"] = json.loads(d["preferred_skills"])
+        d["candidate_count"] = int(d.get("candidate_count") or 0)
+        d["top_score"] = float(d.get("top_score") or 0.0)
         result.append(d)
     return result
 

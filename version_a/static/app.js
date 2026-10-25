@@ -3,6 +3,10 @@ let allJobs = [];
 let selectedJobId = null;
 let requiredSkillsList = [];
 let preferredSkillsList = [];
+let lastRenderedJobsSnapshot = "";
+let lastCandidatesCache = {};
+let isUserInteractingTable = false;
+let isUserInteractingJobs = false;
 
 // Time formatting helper using standard IANA timezone without manual offsets
 function formatToIST(isoOrUtcString) {
@@ -53,15 +57,34 @@ const btnAddPreferredSkill = document.getElementById("btn-add-preferred-skill");
 
 // Initialization
 document.addEventListener("DOMContentLoaded", () => {
+  initCustomCursor();
   setupEventListeners();
   loadJobs();
 
-  // Background refresh every 6 seconds to update candidates if Version B evaluated new resumes
-  setInterval(() => {
+  // Background refresh every 3 seconds to update candidates and job badges in real-time
+  setInterval(async () => {
+    await loadJobs(true);
     if (selectedJobId) {
-      loadCandidatesForJob(selectedJobId, false);
+      await loadCandidatesForJob(selectedJobId, false);
     }
-  }, 6000);
+  }, 3000);
+
+  // Instantly refresh when the recruiter switches back to this tab
+  window.addEventListener("focus", async () => {
+    await loadJobs(true);
+    if (selectedJobId) {
+      await loadCandidatesForJob(selectedJobId, false);
+    }
+  });
+
+  document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState === "visible") {
+      await loadJobs(true);
+      if (selectedJobId) {
+        await loadCandidatesForJob(selectedJobId, false);
+      }
+    }
+  });
 });
 
 function setupEventListeners() {
@@ -70,6 +93,8 @@ function setupEventListeners() {
   btnCancelModal.addEventListener("click", closeJobModal);
   
   btnRefreshAll.addEventListener("click", async () => {
+    lastRenderedJobsSnapshot = "";
+    if (selectedJobId) lastCandidatesCache[selectedJobId] = null;
     await loadJobs();
     if (selectedJobId) {
       await loadCandidatesForJob(selectedJobId, false);
@@ -78,7 +103,28 @@ function setupEventListeners() {
   });
 
   jobsSearchInput.addEventListener("input", (e) => {
+    lastRenderedJobsSnapshot = "";
     renderJobsList(e.target.value.trim().toLowerCase());
+  });
+
+  // Track user interaction with jobs list to prevent scroll resets
+  if (jobsListContainer) {
+    jobsListContainer.addEventListener("mousedown", () => {
+      isUserInteractingJobs = true;
+    });
+    jobsListContainer.addEventListener("scroll", () => {
+      isUserInteractingJobs = true;
+      clearTimeout(jobsListContainer._scrollTimer);
+      jobsListContainer._scrollTimer = setTimeout(() => {
+        isUserInteractingJobs = false;
+      }, 800);
+    }, { passive: true });
+  }
+
+  // Global mouseup release
+  window.addEventListener("mouseup", () => {
+    isUserInteractingTable = false;
+    isUserInteractingJobs = false;
   });
 
   createJobForm.addEventListener("submit", handleCreateJob);
@@ -139,18 +185,33 @@ function renderTags(list, container) {
   });
 }
 
-async function loadJobs() {
+async function loadJobs(preserveSelection = false) {
   try {
-    const res = await fetch("/jobs");
+    const res = await fetch("/jobs?t=" + Date.now(), { cache: "no-store" });
     if (!res.ok) throw new Error("Failed to load jobs");
-    allJobs = await res.json();
+    const freshJobs = await res.json();
     
+    // Alert recruiter if any job gained new candidates
+    if (allJobs.length > 0) {
+      freshJobs.forEach(fj => {
+        const prev = allJobs.find(oj => oj.job_id === fj.job_id);
+        if (prev && (fj.candidate_count || 0) > (prev.candidate_count || 0)) {
+          showToast(`⚡ New candidate evaluated for [${fj.job_id}]! Total: ${fj.candidate_count}`, "success");
+        }
+      });
+    }
+
+    allJobs = freshJobs;
     updateMetricsSummary();
     renderJobsList(jobsSearchInput.value.trim().toLowerCase());
 
     if (allJobs.length > 0) {
       if (!selectedJobId || !allJobs.some(j => j.job_id === selectedJobId)) {
         selectJob(allJobs[0].job_id);
+      } else if (preserveSelection) {
+        document.querySelectorAll(".job-item").forEach(el => {
+          el.classList.toggle("selected", el.dataset.id === selectedJobId);
+        });
       }
     } else {
       selectedJobId = null;
@@ -158,7 +219,9 @@ async function loadJobs() {
     }
   } catch (err) {
     console.error("Error loading jobs:", err);
-    showToast("Could not load jobs from database", "error");
+    if (!preserveSelection) {
+      showToast("Could not load jobs from database", "error");
+    }
   }
 }
 
@@ -169,11 +232,16 @@ function updateMetricsSummary() {
   
   const syncedCount = allJobs.filter(j => j.sync_status === "synced").length;
   metricSyncedJobs.textContent = syncedCount;
+
+  // Real aggregate count of candidates across ALL jobs in the database
+  const totalCandidates = allJobs.reduce((sum, j) => sum + (j.candidate_count || 0), 0);
+  metricTotalCandidates.textContent = totalCandidates;
+
+  const maxScore = Math.max(0, ...allJobs.map(j => j.top_score || 0));
+  metricTopScore.textContent = maxScore > 0 ? `${maxScore.toFixed(1)}%` : "0%";
 }
 
 function renderJobsList(query = "") {
-  jobsListContainer.innerHTML = "";
-  
   const q = (query || "").trim().toLowerCase();
   const filtered = allJobs.filter(j => {
     if (!q) return true;
@@ -184,12 +252,37 @@ function renderJobsList(query = "") {
     return titleMatch || idMatch || reqSkillsMatch || prefSkillsMatch;
   });
 
+  const jobsSnapshot = JSON.stringify({
+    q,
+    selectedId: selectedJobId,
+    jobs: filtered.map(j => ({
+      id: j.job_id,
+      title: j.job_title,
+      cands: j.candidate_count,
+      sync: j.sync_status
+    }))
+  });
+
+  // Skip DOM wipe if nothing changed to prevent scroll jumping
+  if (jobsSnapshot === lastRenderedJobsSnapshot) {
+    return;
+  }
+
+  // If user is currently holding or dragging the jobs sidebar, don't interrupt
+  if (isUserInteractingJobs) {
+    return;
+  }
+
+  const prevScrollTop = jobsListContainer.scrollTop;
+  jobsListContainer.innerHTML = "";
+
   if (filtered.length === 0) {
     jobsListContainer.innerHTML = `
       <div class="empty-state">
         <p>${q ? 'No matching jobs found.' : 'No job postings yet.<br>Click <strong>+ Post Job</strong> to create one.'}</p>
       </div>
     `;
+    lastRenderedJobsSnapshot = jobsSnapshot;
     return;
   }
 
@@ -201,14 +294,21 @@ function renderJobsList(query = "") {
     const skillsHtml = (job.required_skills || []).slice(0, 3).map(s => `<span class="skill-pill">${s}</span>`).join("");
     const moreSkills = (job.required_skills || []).length > 3 ? `<span class="skill-pill">+${job.required_skills.length - 3}</span>` : "";
 
+    const candCount = job.candidate_count || 0;
+    const hasCands = candCount > 0;
+    const badgeText = `${candCount} Cand${candCount === 1 ? '' : 's'}`;
+
     item.innerHTML = `
       <div class="job-item-header">
         <span class="job-item-id">${job.job_id}</span>
-        <span style="font-size: 0.72rem; color: var(--text-muted);">${formatToIST(job.created_at)}</span>
+        <span class="job-cand-badge ${hasCands ? 'has-cands active-pulse' : ''}" title="${candCount} evaluated candidates">
+          ${badgeText}
+        </span>
       </div>
       <div class="job-item-title">${job.job_title}</div>
-      <div class="job-item-meta">
+      <div class="job-item-meta" style="display: flex; justify-content: space-between; align-items: center;">
         <span>Min Exp: ${job.min_experience} yrs</span>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">${formatToIST(job.created_at)}</span>
       </div>
       <div class="job-item-skills">
         ${skillsHtml} ${moreSkills}
@@ -218,6 +318,9 @@ function renderJobsList(query = "") {
     item.addEventListener("click", () => selectJob(job.job_id));
     jobsListContainer.appendChild(item);
   });
+
+  jobsListContainer.scrollTop = prevScrollTop;
+  lastRenderedJobsSnapshot = jobsSnapshot;
 }
 
 function renderEmptyDetail() {
@@ -234,13 +337,16 @@ function renderEmptyDetail() {
         <polyline points="10 9 9 9 8 9"></polyline>
       </svg>
       <h3>Select a Job Posting</h3>
-      <p>Choose an active job from the left panel to inspect specifications and view ranked candidates calculated by the Candidate Matching Portal.</p>
+      <p>Choose an active job from the left panel to inspect specifications and view auto-ranked candidates in descending score order.</p>
     </div>
   `;
 }
 
 async function selectJob(jobId) {
   selectedJobId = jobId;
+  lastCandidatesCache[jobId] = null; // force fresh render for new selection
+  lastRenderedJobsSnapshot = ""; // update selection highlight in sidebar
+  renderJobsList(jobsSearchInput.value.trim().toLowerCase());
   
   document.querySelectorAll(".job-item").forEach(el => {
     el.classList.toggle("selected", el.dataset.id === jobId);
@@ -273,8 +379,8 @@ function renderJobDetailsSkeleton(job) {
         </div>
         <div class="job-spec-actions">
           ${job.sync_status !== "synced" ? `
-            <button class="btn btn-secondary btn-sm" onclick="retrySyncJob('${job.job_id}')" title="Synchronize with Candidate Matching Portal">
-              Sync to Matching Portal
+            <button class="btn btn-secondary btn-sm" onclick="retrySyncJob('${job.job_id}')" title="Synchronize Requisition">
+              Sync Requisition
             </button>
           ` : ''}
           <button class="btn btn-danger btn-sm" onclick="deleteJob('${job.job_id}')" title="Delete job">
@@ -350,6 +456,7 @@ async function handleRefreshRankings(jobId) {
     <span>Refreshing...</span>
   `;
   try {
+    lastCandidatesCache[jobId] = null; // force fresh render
     await loadCandidatesForJob(jobId, false);
     btn.classList.add("btn-refresh-success");
     btn.innerHTML = `
@@ -373,21 +480,27 @@ async function handleRefreshRankings(jobId) {
 
 async function loadCandidatesForJob(jobId, showToastNotification = false) {
   try {
-    const res = await fetch(`/jobs/${jobId}/candidates`);
+    const res = await fetch(`/jobs/${jobId}/candidates?t=` + Date.now(), { cache: "no-store" });
     if (!res.ok) throw new Error("Failed to load candidates");
     const data = await res.json();
     
     const countBadge = document.getElementById("candidate-count-badge");
     if (countBadge) countBadge.textContent = data.total_candidates;
 
-    metricTotalCandidates.textContent = data.total_candidates;
-    if (data.candidates && data.candidates.length > 0) {
-      metricTopScore.textContent = `${data.candidates[0].match_score}%`;
-    } else {
-      metricTopScore.textContent = "0%";
+    const freshKey = JSON.stringify(data.candidates);
+
+    // If candidate data has not changed, do NOT touch DOM to avoid resetting scrollbar
+    if (lastCandidatesCache[jobId] === freshKey) {
+      return;
+    }
+
+    // If user is currently holding or dragging the table scrollbar, postpone DOM replacement
+    if (isUserInteractingTable) {
+      return;
     }
 
     renderCandidatesTable(data.candidates);
+    lastCandidatesCache[jobId] = freshKey;
 
     if (showToastNotification) {
       showToast(`Rankings updated (${data.candidates.length} candidates)`, "info");
@@ -401,13 +514,17 @@ function renderCandidatesTable(candidates) {
   const container = document.getElementById("candidates-table-container");
   if (!container) return;
 
+  // Preserve scroll positions of previous table wrapper
+  const prevWrap = container.querySelector(".candidates-table-wrap");
+  const prevScrollLeft = prevWrap ? prevWrap.scrollLeft : 0;
+  const prevScrollTop = prevWrap ? prevWrap.scrollTop : 0;
+
   if (!candidates || candidates.length === 0) {
     container.innerHTML = `
       <div class="empty-candidates-box">
         <h4>No Candidates Evaluated Yet</h4>
         <p>
-          Open the <strong>Candidate Matching Portal</strong>, select <code>${selectedJobId}</code>, and upload candidate resumes (.pdf, .docx, or .txt).
-          Matching scores and ranked results will appear here automatically.
+          When applicants submit their resumes for <code>${selectedJobId}</code>, matching scores and auto-ranked results will appear here in real time.
         </p>
       </div>
     `;
@@ -484,6 +601,25 @@ function renderCandidatesTable(candidates) {
       </table>
     </div>
   `;
+
+  // Restore scroll positions accurately
+  const newWrap = container.querySelector(".candidates-table-wrap");
+  if (newWrap) {
+    newWrap.scrollLeft = prevScrollLeft;
+    newWrap.scrollTop = prevScrollTop;
+
+    newWrap.addEventListener("mousedown", () => {
+      isUserInteractingTable = true;
+    });
+
+    newWrap.addEventListener("scroll", () => {
+      isUserInteractingTable = true;
+      clearTimeout(newWrap._scrollTimer);
+      newWrap._scrollTimer = setTimeout(() => {
+        isUserInteractingTable = false;
+      }, 800);
+    }, { passive: true });
+  }
 }
 
 async function openCandidateDetails(jobId, candidateId) {
@@ -520,7 +656,7 @@ async function openCandidateDetails(jobId, candidateId) {
         </div>
         <div style="background: var(--bg-surface); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-color);">
           <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Status</div>
-          <div style="font-size: 1rem; font-weight: 700; color: ${d.evaluation_status === 'Review Flagged' ? 'var(--warning-text, #b45309)' : 'var(--success-text)}; margin-top: 4px;'>
+          <div style="font-size: 1rem; font-weight: 700; color: ${d.evaluation_status === 'Review Flagged' ? 'var(--warning-text, #b45309)' : 'var(--success-text)'}; margin-top: 4px;">
             ${d.evaluation_status || 'Evaluation Completed'}
           </div>
         </div>
@@ -582,17 +718,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function retrySyncJob(jobId) {
   try {
-    showToast(`Synchronizing ${jobId} with Candidate Matching Portal...`, "info");
+    showToast(`Synchronizing ${jobId}...`, "info");
     const res = await fetch(`/jobs/${jobId}/sync`, { method: "POST" });
     const data = await res.json();
     if (res.ok && data.sync_status === "synced") {
       showToast(`Job ${jobId} synchronized successfully!`, "success");
     } else {
-      showToast(`Sync failed: Candidate Matching Portal is currently unreachable`, "error");
+      showToast(`Sync failed: Evaluation service is currently unreachable`, "error");
     }
     loadJobs();
   } catch (err) {
-    showToast("Sync request failed. Make sure Candidate Matching Portal is running.", "error");
+    showToast("Sync request failed. Make sure evaluation service is active.", "error");
   }
 }
 
@@ -665,7 +801,7 @@ async function handleCreateJob(e) {
     closeJobModal();
     
     if (created.sync_status === "synced") {
-      showToast(`Job ${created.job_id} posted and synchronized with Candidate Matching Portal!`, "success");
+      showToast(`Job ${created.job_id} posted and synchronized successfully!`, "success");
     } else {
       showToast(`Job ${created.job_id} posted locally (Sync status: ${created.sync_status})`, "info");
     }
@@ -681,21 +817,29 @@ async function handleCreateJob(e) {
 }
 
 function openJobModal() {
-  createJobForm.reset();
-  // Clear arrays in place to preserve closures and references
+  if (createJobForm) createJobForm.reset();
   requiredSkillsList.length = 0;
   preferredSkillsList.length = 0;
   renderTags(requiredSkillsList, requiredTagsContainer);
   renderTags(preferredSkillsList, preferredTagsContainer);
-  modalCreateJob.classList.add("open");
+  if (modalCreateJob) modalCreateJob.classList.add("open");
 }
 
 function closeJobModal() {
-  modalCreateJob.classList.remove("open");
+  if (modalCreateJob) modalCreateJob.classList.remove("open");
 }
+
+// Global functions for inline HTML event handlers
+window.openJobModal = openJobModal;
+window.closeJobModal = closeJobModal;
+window.retrySyncJob = retrySyncJob;
+window.deleteJob = deleteJob;
+window.loadCandidatesForJob = loadCandidatesForJob;
+window.handleRefreshRankings = handleRefreshRankings;
 
 function showToast(message, type = "info") {
   const container = document.getElementById("toast-container");
+  if (!container) return;
   const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
@@ -707,9 +851,72 @@ function showToast(message, type = "info") {
   }, 3500);
 }
 
-// Global functions for inline HTML event handlers
-window.retrySyncJob = retrySyncJob;
-window.deleteJob = deleteJob;
-window.loadCandidatesForJob = loadCandidatesForJob;
-window.handleRefreshRankings = handleRefreshRankings;
+// Fluid Agency Cursor with Event Delegation (Works for all static and dynamically added elements)
+function initCustomCursor() {
+  const dot = document.getElementById("cursorDot");
+  const ring = document.getElementById("cursorRing");
+  if (!dot || !ring) return;
+
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+  let ringX = mouseX;
+  let ringY = mouseY;
+
+  window.addEventListener("mousemove", (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+  });
+
+  function renderFollower() {
+    ringX += (mouseX - ringX) * 0.18;
+    ringY += (mouseY - ringY) * 0.18;
+    ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+    requestAnimationFrame(renderFollower);
+  }
+  requestAnimationFrame(renderFollower);
+
+  // Dynamic Event Delegation for hover states across all interactive elements
+  const interactiveSelector = "a, button, .job-item, .metric-card, .btn-pill, .btn, input, select, textarea, .rank-badge, .modal-close, .remove-tag, .tag-remove";
+  
+  document.addEventListener("mouseover", (e) => {
+    if (e.target && e.target.closest && e.target.closest(interactiveSelector)) {
+      ring.classList.add("cursor-hover");
+    }
+  });
+
+  document.addEventListener("mouseout", (e) => {
+    if (e.target && e.target.closest && e.target.closest(interactiveSelector)) {
+      ring.classList.remove("cursor-hover");
+    }
+  });
+
+  document.addEventListener("mouseleave", () => {
+    dot.style.opacity = "0";
+    ring.style.opacity = "0";
+  });
+
+  document.addEventListener("mouseenter", () => {
+    dot.style.opacity = "1";
+    ring.style.opacity = "1";
+  });
+}
+
+// Global Modal Backdrop and Escape Key handling
+document.addEventListener("DOMContentLoaded", () => {
+  const jobModal = document.getElementById("modal-create-job");
+  if (jobModal) {
+    jobModal.addEventListener("click", (e) => {
+      if (e.target === jobModal) closeJobModal();
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeJobModal();
+      const candModal = document.getElementById("modal-candidate-details");
+      if (candModal) candModal.classList.remove("active");
+    }
+  });
+});
 

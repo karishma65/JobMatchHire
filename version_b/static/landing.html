@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobMatchHire | Candidate Portal & AI Resume Matching</title>
+  <meta name="description" content="Candidate evaluation and resume matching platform with deterministic 4-factor scoring and instant contextual feedback.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700;1,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/landing.css">
+</head>
+<body>
+  <!-- Fluid Red Dot Cursor (eDesign Interactive Style) -->
+  <div class="custom-cursor-dot" id="cursorDot"></div>
+  <div class="custom-cursor-ring" id="cursorRing"></div>
+
+  <!-- Architectural Background Grid Lines -->
+  <div class="grid-lines-overlay" aria-hidden="true">
+    <div class="grid-line"></div>
+    <div class="grid-line"></div>
+    <div class="grid-line"></div>
+    <div class="grid-line"></div>
+    <div class="grid-line"></div>
+  </div>
+
+  <!-- Rotated Side Badges -->
+  <div class="side-badge-left" aria-hidden="true">&copy; 2004–2026 JOBMATCHHIRE // CANDIDATE PORTAL</div>
+  <div class="side-badge-right" aria-hidden="true">SCROLL DOWN</div>
+
+  <!-- Clean Spacious Agency Header with Waving Hand Logo -->
+  <header class="site-header">
+    <div class="container">
+      <div class="header-inner">
+        <a href="/" class="brand-wrapper">
+          <div class="brand-hand-icon" aria-label="Waving hand logo">
+            <svg class="waving-hand-svg" viewBox="0 0 100 100" fill="currentColor">
+              <path d="M 43.5,6.0 Q 43.5,6.0 42.1,7.4 Q 40.6,8.9 41.3,11.0 Q 42.1,13.2 42.8,15.4 Q 43.5,17.5 45.0,19.7 Q 46.4,21.9 47.8,24.0 Q 49.3,26.2 50.0,28.4 Q 50.7,30.5 52.2,32.7 Q 53.6,34.9 54.3,37.0 Q 55.0,39.2 52.9,39.2 Q 50.7,39.2 48.6,37.7 Q 46.4,36.3 44.2,34.1 Q 42.1,32.0 39.9,29.8 Q 37.7,27.6 35.6,25.5 Q 33.4,23.3 31.2,21.9 Q 29.1,20.4 26.9,18.3 Q 24.8,16.1 22.6,15.4 Q 20.4,14.7 19.0,16.1 Q 17.5,17.5 18.3,19.7 Q 19.0,21.9 20.4,24.0 Q 21.9,26.2 24.0,28.4 Q 26.2,30.5 28.4,32.7 Q 30.5,34.9 32.7,37.0 Q 34.9,39.2 37.0,41.3 Q 39.2,43.5 41.3,45.7 Q 43.5,47.8 43.5,50.0 Q 43.5,52.2 41.3,52.2 Q 39.2,52.2 37.0,50.0 Q 34.9,47.8 32.7,46.4 Q 30.5,45.0 28.4,43.5 Q 26.2,42.1 24.0,40.6 Q 21.9,39.2 19.7,37.7 Q 17.5,36.3 15.4,34.9 Q 13.2,33.4 11.0,34.1 Q 8.9,34.9 8.2,37.0 Q 7.4,39.2 8.9,40.6 Q 10.3,42.1 12.5,44.2 Q 14.7,46.4 16.8,47.8 Q 19.0,49.3 21.1,50.7 Q 23.3,52.2 25.5,53.6 Q 27.6,55.0 29.8,57.2 Q 32.0,59.4 34.1,60.8 Q 36.3,62.3 36.3,64.4 Q 36.3,66.6 34.1,66.6 Q 32.0,66.6 29.8,65.1 Q 27.6,63.7 25.5,63.0 Q 23.3,62.3 21.1,61.5 Q 19.0,60.8 16.8,59.4 Q 14.7,57.9 12.5,57.9 Q 10.3,57.9 8.2,58.7 Q 6.0,59.4 6.7,61.5 Q 7.4,63.7 9.6,65.1 Q 11.8,66.6 13.9,68.0 Q 16.1,69.5 18.3,70.9 Q 20.4,72.4 22.6,73.8 Q 24.8,75.2 26.9,76.7 Q 29.1,78.1 31.2,79.6 Q 33.4,81.0 35.6,82.5 Q 37.7,83.9 39.9,86.1 Q 42.1,88.2 44.2,89.7 Q 46.4,91.1 48.6,91.8 Q 50.7,92.6 52.9,93.3 Q 55.0,94.0 57.2,94.0 Q 59.4,94.0 61.5,94.0 Q 63.7,94.0 65.9,93.3 Q 68.0,92.6 70.2,91.1 Q 72.4,89.7 73.8,87.5 Q 75.2,85.3 77.4,83.2 Q 79.6,81.0 81.7,79.6 Q 83.9,78.1 85.3,76.0 Q 86.8,73.8 87.5,71.6 Q 88.2,69.5 89.0,67.3 Q 89.7,65.1 89.7,63.0 Q 89.7,60.8 89.7,58.7 Q 89.7,56.5 90.4,54.3 Q 91.1,52.2 91.1,50.0 Q 91.1,47.8 91.1,45.7 Q 91.1,43.5 91.8,41.3 Q 92.6,39.2 92.6,37.0 Q 92.6,34.9 93.3,32.7 Q 94.0,30.5 94.0,28.4 Q 94.0,26.2 94.0,24.0 Q 94.0,21.9 92.6,21.1 Q 91.1,20.4 89.0,21.1 Q 86.8,21.9 85.3,24.0 Q 83.9,26.2 83.2,28.4 Q 82.5,30.5 82.5,32.7 Q 82.5,34.9 81.7,37.0 Q 81.0,39.2 79.6,41.3 Q 78.1,43.5 76.0,43.5 Q 73.8,43.5 71.6,42.1 Q 69.5,40.6 68.0,38.5 Q 66.6,36.3 65.1,34.1 Q 63.7,32.0 62.3,29.8 Q 60.8,27.6 59.4,25.5 Q 57.9,23.3 56.5,21.1 Q 55.0,19.0 53.6,16.8 Q 52.2,14.7 50.7,12.5 Q 49.3,10.3 47.8,8.2 Q 46.4,6.0 45.0,6.0 Z"/>
+            </svg>
+          </div>
+          <div class="brand-title-box">
+            <span class="brand-name">JobMatchHire</span>
+            <span class="brand-meta">Candidate Portal</span>
+          </div>
+        </a>
+
+        <ul class="nav-links-menu">
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#metrics">Openings</a></li>
+        </ul>
+
+        <div class="header-actions">
+          <a href="/portal" class="btn-pill btn-pill-red" id="nav-btn-candidate">
+            <span>Evaluate Resume</span>
+            <span class="btn-pill-arrow">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section: Candidate Edition -->
+  <section class="hero-editorial" id="overview">
+    <div class="container">
+      <div class="hero-editorial-grid">
+        <div class="hero-text-col">
+          <span class="card-eyebrow" style="margin-bottom: 12px; display: inline-block;">AI RESUME INTELLIGENCE // OBJECTIVE MATCHING</span>
+          <h1 class="hero-editorial-title">
+            Turn credentials into verified career matches<span class="title-accent">.</span>
+          </h1>
+
+          <div class="hero-desc-cols">
+            <div class="hero-col-text">
+              <strong>JobMatchHire Candidate Portal</strong> empowers candidates with explainable AI resume evaluation. Upload your resume in PDF, DOCX, or TXT format and evaluate your contextual fit against active job openings.
+            </div>
+            <div class="hero-col-text">
+              Receive transparent 4-factor scoring, verified skill evidence summaries, and confidential evaluation reports. Know exactly how your experience aligns with technical requirements.
+            </div>
+          </div>
+
+          <div class="hero-cta-row">
+            <a href="/portal" class="btn-pill btn-pill-red" id="hero-btn-evaluate">
+              <span>Launch Resume Evaluator</span>
+              <span class="btn-pill-arrow">→</span>
+            </a>
+            <a href="#how-it-works" class="btn-pill btn-pill-outline">
+              <span>How It Works</span>
+              <span class="btn-pill-arrow">↓</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="hero-marionette-wrap">
+          <div class="hero-marionette-card">
+            <img src="/static/images/candidate_portal_hero.jpg" alt="Candidate Intelligence Character" class="hero-marionette-img">
+            <div class="hero-marionette-caption">
+              <span>ECCE 2.0 // CANDIDATE EVALUATION</span>
+              <span style="color:var(--accent-red);">100% OBJECTIVE</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Metrics Bar -->
+  <section class="metrics-section" id="metrics">
+    <div class="container">
+      <div class="visual-bottom-stats" style="background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 28px 36px; box-shadow: var(--shadow-sm);">
+        <div class="stat-item">
+          <span class="stat-num" id="stat-job-count">11</span>
+          <span class="stat-label">Active Job Openings</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">PDF/DOCX/TXT</span>
+          <span class="stat-label">Supported Formats</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">4-Factor</span>
+          <span class="stat-label">Evaluation Criteria</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" id="stat-engine-status" style="color: var(--accent-green); font-size: 1.1rem; font-weight: 800;">READY</span>
+          <span class="stat-label">Evaluation Engine</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Candidate Capabilities Showcase -->
+  <section class="showcase-section" id="features">
+    <div class="container">
+      <!-- Feature 01: Universal Multi-Format Resume Parser -->
+      <article class="showcase-card">
+        <div class="card-text-side">
+          <span class="card-eyebrow">01 / DOCUMENT INTELLIGENCE</span>
+          <h2 class="card-title">Universal Multi-Format Resume Parser</h2>
+          <p class="card-desc">
+            Submit your resume in whatever format you prefer. Our intelligent document processor handles PDF, Microsoft Word (.docx), and plain text files with high fidelity text extraction.
+          </p>
+
+          <ul class="card-spec-list">
+            <li class="card-spec-item">
+              <span class="spec-dash">/</span>
+              <span>Direct drag & drop or file browse with responsive visual dropzone</span>
+            </li>
+            <li class="card-spec-item">
+              <span class="spec-dash">/</span>
+              <span>Intelligent skill taxonomy canonicalization across technical domains</span>
+            </li>
+            <li class="card-spec-item">
+              <span class="spec-dash">/</span>
+              <span>Automatic candidate name extraction with manual override option</span>
+            </li>
+          </ul>
+
+          <div>
+            <a href="/portal" class="btn-pill btn-pill-outline">
+              <span>Start Evaluation</span>
+              <span class="btn-pill-arrow">→</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="card-visual-side visual-bg-candidate">
+          <div class="visual-top-bar">
+            <span class="visual-badge visual-badge-dark">
+              <span class="status-dot-active" style="background:#fe4032;"></span> Universal Parsing
+            </span>
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color:#fff;">PARSER 2.0</span>
+          </div>
+
+          <div class="visual-center-art">
+            <div class="metric-highlight" style="color:#ffffff;">Universal</div>
+            <div class="metric-subtitle" style="color:var(--accent-red);">PDF · DOCX · TXT</div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Feature 02: 4-Factor Weighted Matching -->
+      <article class="showcase-card reverse">
+        <div class="card-text-side">
+          <span class="card-eyebrow">02 / SCORING ARCHITECTURE</span>
+          <h2 class="card-title">Transparent 4-Factor Matching Algorithm</h2>
+          <p class="card-desc">
+            No black-box decisions. Your resume is evaluated against the target job requirements using a calibrated, explainable multi-factor scoring algorithm.
+          </p>
+
+          <ul class="card-spec-list">
+            <li class="card-spec-item">
+              <span class="spec-dash">/</span>
+              <span>50% Required Skills: Coverage of essential technical prerequisites</span>
+            </li>
+            <li class="card-spec-item">
+              <span class="spec-dash">/</span>
+              <span>25% Years of Experience: Verifiable professional tenure validation</span>
+            </li>
+            <li class="card-spec-item">
+              <span class="spec-dash">/</span>
+              <span>15% Preferred Skills: Bonus competencies and domain familiarity</span>
+            </li>
+            <li class="card-spec-item">
+              <span class="spec-dash">/</span>
+              <span>10% Semantic Fit: TF-IDF cosine similarity against job description</span>
+            </li>
+          </ul>
+
+          <div>
+            <a href="/portal" class="btn-pill btn-pill-red">
+              <span>Test Your Match Score</span>
+              <span class="btn-pill-arrow">→</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="card-visual-side visual-bg-recruiter">
+          <div class="visual-top-bar">
+            <span class="visual-badge visual-badge-light">
+              <span class="status-dot-active"></span> Calibrated Weights
+            </span>
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700;">ALGORITHM</span>
+          </div>
+
+          <div class="visual-center-art">
+            <div class="metric-highlight">4-Factor</div>
+            <div class="metric-subtitle">Deterministic Accuracy</div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Feature 03: Confidential Evaluation Report -->
+      <article class="showcase-card">
+        <div class="card-text-side">
+          <span class="card-eyebrow">03 / VERIFIED EVIDENCE</span>
+          <h2 class="card-title">Token-Protected Evaluation Feedback</h2>
+          <p class="card-desc">
+            Gain immediate clarity on your application fit. Receive matched vs. missing competency breakdowns, verified evidence citations, and download official 8-section evaluation reports.
+          </p>
+
+          <ul class="card-spec-list">
+            <li class="card-spec-item">
+              <span class="spec-dash">/</span>
+              <span>Cryptographic candidate token secures confidential evaluation reports</span>
+            </li>
+            <li class="card-spec-item">
+              <span class="spec-dash">/</span>
+              <span>Iterative re-evaluation with automated versioning (v1 → v2 updates)</span>
+            </li>
+            <li class="card-spec-item">
+              <span class="spec-dash">/</span>
+              <span>Actionable counterfactual guidance identifying key skills to acquire</span>
+            </li>
+          </ul>
+
+          <div>
+            <a href="/portal" class="btn-pill btn-pill-outline">
+              <span>Evaluate Now</span>
+              <span class="btn-pill-arrow">→</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="card-visual-side visual-bg-candidate">
+          <div class="visual-top-bar">
+            <span class="visual-badge visual-badge-dark">
+              <span class="status-dot-active" style="background:#fe4032;"></span> Confidential
+            </span>
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color:#fff;">EVIDENCE AUDIT</span>
+          </div>
+
+          <div class="visual-center-art">
+            <div class="metric-highlight" style="color:#ffffff;">Verified</div>
+            <div class="metric-subtitle" style="color:var(--accent-red);">Contextual Competency</div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- How It Works Step-by-Step -->
+  <section class="workflow-strip" id="how-it-works">
+    <div class="container">
+      <div class="section-lead-header">
+        <span class="card-eyebrow">THREE SIMPLE STEPS</span>
+        <h2 class="section-main-title">How Candidate Matching Works</h2>
+        <p class="section-main-desc">Get matched and evaluated against active job requirements in seconds.</p>
+      </div>
+
+      <div class="workflow-grid-three">
+        <div class="workflow-step-card">
+          <span class="step-card-num">01</span>
+          <h3 class="step-card-title">Select Target Opening</h3>
+          <p class="step-card-desc">Choose from active job requisitions to view required skills, preferred bonuses, and experience thresholds.</p>
+        </div>
+        <div class="workflow-step-card">
+          <span class="step-card-num">02</span>
+          <h3 class="step-card-title">Upload Resume File</h3>
+          <p class="step-card-desc">Drag & drop or browse your resume in PDF, Word (.docx), or Text format. Text is extracted automatically.</p>
+        </div>
+        <div class="workflow-step-card">
+          <span class="step-card-num">03</span>
+          <h3 class="step-card-title">Get Match Analysis</h3>
+          <p class="step-card-desc">View instant multi-factor score breakdown, verified evidence summary, and download your evaluation report.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Big Call to Action -->
+  <section class="bottom-cta-section">
+    <div class="container">
+      <div class="bottom-cta-inner">
+        <span class="card-eyebrow" style="color: rgba(255,255,255,0.7);">DISCOVER YOUR MATCH SCORE</span>
+        <h2 class="bottom-cta-title">Ready to evaluate your resume?</h2>
+        <p class="bottom-cta-desc">Match your skills against active roles with transparent, objective AI intelligence.</p>
+        <div style="margin-top: 24px;">
+          <a href="/portal" class="btn-pill btn-pill-red" style="background:#ffffff; color:#111111; font-weight:800;">
+            <span>Launch Resume Evaluator</span>
+            <span class="btn-pill-arrow">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modern Agency Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top-row">
+        <div>
+          <span class="footer-brand-title">JobMatchHire Candidate Portal</span>
+          <p class="footer-brand-tagline">Objective Candidate Evaluation & AI Resume Matching.</p>
+        </div>
+        <div>
+          <a href="/portal" class="btn-pill btn-pill-outline" style="border-color:#ffffff; color:#ffffff;">
+            <span>Evaluate Resume</span>
+            <span class="btn-pill-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="footer-bot-row">
+        <div class="copyright-txt">&copy; 2004–2026 JobMatchHire. All rights reserved. Candidate Intelligence Portal.</div>
+        <div class="footer-nav-links">
+          <a href="#overview">Overview</a>
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How It Works</a>
+          <a href="/portal">Resume Evaluator</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/landing.js"></script>
+</body>
+</html>

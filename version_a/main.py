@@ -145,8 +145,33 @@ async def retry_sync_job(job_id: str):
     return database.get_job(job_id)
 
 @app.get("/jobs", response_model=List[JobResponse], tags=["Jobs"])
-async def list_all_jobs():
-    """Retrieve all jobs stored in SQLite"""
+async def list_all_jobs(sync_from_b: bool = True):
+    """Retrieve all jobs stored in SQLite, optionally syncing missing jobs from Version B"""
+    if sync_from_b:
+        try:
+            async with httpx.AsyncClient(timeout=2.5) as client:
+                resp = await client.get(f"{VERSION_B_URL}/jobs?sync_from_a=false")
+                if resp.status_code == 200:
+                    for j in resp.json():
+                        existing = database.get_job(j["job_id"])
+                        if not existing:
+                            database.save_job(
+                                {
+                                    "job_id": j["job_id"],
+                                    "job_title": j["job_title"],
+                                    "job_description": j.get("job_description", ""),
+                                    "required_skills": j.get("required_skills", []),
+                                    "preferred_skills": j.get("preferred_skills", []),
+                                    "min_experience": float(j.get("min_experience", 0.0)),
+                                    "education_requirement": j.get("education_requirement", "Bachelor's Degree"),
+                                    "created_at": j.get("received_at")
+                                },
+                                sync_status="synced",
+                                sync_message=f"Synced from Candidate Portal ({VERSION_B_URL})"
+                            )
+        except Exception as e:
+            logger.warning(f"Could not pull jobs from Version B: {e}")
+
     return database.list_jobs()
 
 @app.get("/jobs/{job_id}", response_model=JobResponse, tags=["Jobs"])
@@ -232,13 +257,35 @@ async def get_css_root():
 async def get_js_root():
     return FileResponse(os.path.join(STATIC_DIR, "app.js"), media_type="application/javascript")
 
+@app.get("/landing.css", include_in_schema=False)
+async def get_landing_css_root():
+    return FileResponse(os.path.join(STATIC_DIR, "landing.css"), media_type="text/css")
+
+@app.get("/landing.js", include_in_schema=False)
+async def get_landing_js_root():
+    return FileResponse(os.path.join(STATIC_DIR, "landing.js"), media_type="application/javascript")
+
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/landing", response_class=HTMLResponse, include_in_schema=False)
+async def serve_recruiter_landing():
+    landing_file = os.path.join(STATIC_DIR, "landing.html")
+    if os.path.exists(landing_file):
+        with open(landing_file, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    index_file = os.path.join(STATIC_DIR, "index.html")
+    if os.path.exists(index_file):
+        with open(index_file, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse("<h1>Recruiter Portal</h1><p>Frontend static files not found.</p>")
+
+@app.get("/recruiter", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/workspace", response_class=HTMLResponse, include_in_schema=False)
 async def serve_recruiter_dashboard():
     index_file = os.path.join(STATIC_DIR, "index.html")
     if os.path.exists(index_file):
         with open(index_file, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
-    return HTMLResponse("<h1>Version A - Recruitment Backend</h1><p>Frontend static files not found.</p>")
+    return HTMLResponse("<h1>Recruiter Workspace</h1><p>Frontend static files not found.</p>")
 
 if __name__ == "__main__":
     import uvicorn

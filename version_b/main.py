@@ -371,13 +371,35 @@ async def get_css_root_b():
 async def get_js_root_b():
     return FileResponse(os.path.join(STATIC_DIR, "app.js"), media_type="application/javascript")
 
+@app.get("/landing.css", include_in_schema=False)
+async def get_landing_css_root_b():
+    return FileResponse(os.path.join(STATIC_DIR, "landing.css"), media_type="text/css")
+
+@app.get("/landing.js", include_in_schema=False)
+async def get_landing_js_root_b():
+    return FileResponse(os.path.join(STATIC_DIR, "landing.js"), media_type="application/javascript")
+
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
-async def serve_candidate_dashboard():
+async def serve_candidate_landing():
+    landing_file = os.path.join(STATIC_DIR, "landing.html")
+    if os.path.exists(landing_file):
+        with open(landing_file, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
     index_file = os.path.join(STATIC_DIR, "index.html")
     if os.path.exists(index_file):
         with open(index_file, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
-    return HTMLResponse("<h1>Version B - Resume Analysis & Matching Backend</h1><p>Frontend static files not found.</p>")
+    return HTMLResponse("<h1>Candidate Portal</h1><p>Frontend static files not found.</p>")
+
+@app.get("/portal", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/candidate", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/apply", response_class=HTMLResponse, include_in_schema=False)
+async def serve_candidate_workspace():
+    index_file = os.path.join(STATIC_DIR, "index.html")
+    if os.path.exists(index_file):
+        with open(index_file, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse("<h1>Candidate Workspace</h1><p>Frontend static files not found.</p>")
 
 if __name__ == "__main__":
     import uvicorn
