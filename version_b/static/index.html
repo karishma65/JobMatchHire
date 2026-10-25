@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobMatchHire | Candidate Evaluation Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Clean Aligned Navigation Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">JMH</div>
+        <div class="brand-info">
+          <h1 class="brand-title">JobMatchHire <span class="tag-version">Candidate Evaluation Portal</span></h1>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-outline btn-sm" id="btn-refresh-jobs" title="Fetch latest job openings">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh Jobs
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="matcher-layout">
+      <!-- Left Column: Input Form & Upload -->
+      <section class="card panel-upload">
+        <div class="card-header">
+          <h2 class="card-title">1. Target Job Opening</h2>
+          <p class="card-subtitle">Select an active job opening to evaluate against</p>
+        </div>
+
+        <div class="form-group">
+          <label for="select-job">Target Job <span class="req">*</span></label>
+          <select id="select-job">
+            <option value="">Select a job</option>
+          </select>
+        </div>
+
+        <!-- Target Job Summary Preview -->
+        <div class="job-summary-card" id="job-summary-card">
+          <div class="empty-hint">Select a job from the dropdown to view its criteria.</div>
+        </div>
+
+        <div class="card-header" style="margin-top: 24px;">
+          <h2 class="card-title">2. Upload Candidate Resume</h2>
+          <p class="card-subtitle">Accepts PDF, DOCX, or TXT format</p>
+        </div>
+
+        <!-- Hidden Native File Input (placed outside clickable dropzone to prevent recursion/dialog suppression) -->
+        <input type="file" id="resume-file-input" accept=".pdf,.docx,.doc,.txt" style="display: none;">
+
+        <!-- Drag & Drop Upload Zone -->
+        <div class="dropzone" id="dropzone" role="button" tabindex="0" title="Click to browse files or drop a resume here">
+          <div class="dropzone-content">
+            <div class="drop-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <div class="drop-title">Drag & drop candidate resume here</div>
+            <div class="drop-desc">or <span class="browse-link" id="browse-link">browse files</span> from your computer</div>
+            <div class="drop-formats">Supported formats: PDF, DOCX, TXT</div>
+          </div>
+        </div>
+
+        <!-- Selected File Indicator -->
+        <div class="selected-file-pill hide" id="selected-file-pill">
+          <div class="file-info">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <span class="file-name" id="file-name-text">resume.pdf</span>
+            <span class="file-size" id="file-size-text">(0 KB)</span>
+          </div>
+          <button type="button" class="btn-clear-file" id="btn-clear-file">&times;</button>
+        </div>
+
+        <!-- Candidate Name (Optional) -->
+        <div class="form-group" style="margin-top: 16px;">
+          <label for="input-candidate-name">Candidate Name (Optional)</label>
+          <input type="text" id="input-candidate-name" placeholder="Leave blank to auto-detect from resume text">
+        </div>
+
+        <!-- Action Button -->
+        <button class="btn btn-primary btn-block" id="btn-analyze-resume" style="margin-top: 8px;">
+          <span class="btn-text">Analyze & Match Resume</span>
+          <div class="spinner hide" id="analyze-spinner"></div>
+        </button>
+      </section>
+
+      <!-- Right Column: Individual Candidate Analysis & Match Results -->
+      <section class="card panel-results">
+        <div class="card-header">
+          <h2 class="card-title">Your Evaluation Results</h2>
+          <p class="card-subtitle">Individual ECCE contextual competency assessment</p>
+        </div>
+
+        <div id="results-display-area">
+          <div class="results-empty-state" style="text-align: center; padding: 48px 24px; color: var(--text-muted);">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; color: var(--border-color, #cbd5e1);">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 6px;">No Evaluation Active</h3>
+            <p style="font-size: 0.88rem; max-width: 380px; margin: 0 auto; line-height: 1.45;">
+              Select a target job requisition, upload your resume (.pdf, .docx, or .txt), and submit to receive your individual evaluation status and download your official ECCE PDF report.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

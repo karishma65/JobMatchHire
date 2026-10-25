@@ -1,0 +1,24 @@
+Alex Rivera
+Email: alex.rivera@example.com | Phone: +1-555-0182 | Chicago, IL
+
+SUMMARY
+Full-Stack Python Engineer with 3.5 years of experience developing robust RESTful web applications, Docker containers, and database backends.
+
+TECHNICAL EXPERTISE
+- Languages: Python, JavaScript, TypeScript, SQL
+- Frameworks: FastAPI, Django, React, Node.js
+- Cloud & DevOps: Docker, AWS, Git, Linux
+- Databases: PostgreSQL, SQLite, Redis
+
+EXPERIENCE
+Full Stack Developer | NexaSystems (2022 - Present)
+- Designed and maintained REST APIs using FastAPI and Python.
+- Built interactive frontend client views using React and JavaScript.
+- Deployed containerized applications with Docker and managed AWS infrastructure.
+- Configured Git version control and participated in daily Scrum standups.
+
+Junior Backend Developer | Apex Data (2021 - 2022)
+- Built Python scripts for data ingestion and wrote SQL queries for PostgreSQL.
+
+EDUCATION
+Bachelor of Science in Computer Science | Illinois Tech (2017 - 2021)
